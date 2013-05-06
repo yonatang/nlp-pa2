@@ -1,0 +1,6 @@
+(TOP (S (yyQUOT yyQUOT) (//@S (S (VP (VB THIH)) (//@S (NP (NN NQMH)) (//@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
+(TOP (S (yyQUOT yyQUOT) (/yyQUOT/@S (S (VP (VB THIH)) (/VP/@S (NP (NN NQMH)) (/NP/@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
+(TOP (S (yyQUOT yyQUOT) (/yyQUOT/@S (S (VP (VB THIH)) (/VP/@S (NP (NN NQMH)) (/VP,NP/@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
+(TOP (S (yyQUOT yyQUOT) (/yyQUOT/@S (S (VP (VB THIH)) (/VP/@S (NP (NN NQMH)) (/VP,NP/@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
+(TOP (S (yyQUOT yyQUOT) (/yyQUOT/@S (S (VP (VB THIH)) (/VP/@S (NP (NN NQMH)) (/VP,NP/@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
+(TOP (S (yyQUOT yyQUOT) (yyQUOT@S (S (VP (VB THIH)) (VP@S (NP (NN NQMH)) (VP,NP@S (CC W) (ADVP (RB BGDWL))))) (yyDOT yyDOT))))
