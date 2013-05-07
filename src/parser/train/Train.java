@@ -49,6 +49,7 @@ public class Train {
 		System.out.println(myTreebank.size());
 		for (int i = 0; i < myTreebank.size(); i++) {
 			Tree myTree = myTreebank.getAnalyses().get(i);
+			if (myTree==null) continue;
 			List<Rule> theRules = getRules(myTree);
 			myGrammar.addAll(theRules);
 
@@ -84,7 +85,7 @@ public class Train {
 			if (myNode.isInternal()) {
 				Event eLHS = new Event(myNode.getIdentifier());
 				Iterator<Node> theDaughters = myNode.getDaughters().iterator();
-				StringBuffer sb = new StringBuffer();
+				StringBuilder sb = new StringBuilder();
 				while (theDaughters.hasNext()) {
 					Node n = (Node) theDaughters.next();
 					sb.append(n.getIdentifier());

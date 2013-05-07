@@ -1,6 +1,7 @@
 package train;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -28,6 +29,17 @@ public class Binarizer {
 				binarize(tree.getRoot());
 		}
 	}
+	
+	public void debinarize(Treebank treebank){
+		debinarize(treebank.getAnalyses());
+	}
+	
+	public void debinarize(Collection<Tree> trees){
+		for (Tree tree : trees) {
+			if (tree!=null)
+				debinarize(tree.getRoot());
+		}
+	}
 
 	private String joinner(List<String> str) {
 		Iterator<String> it = str.iterator();
@@ -41,6 +53,19 @@ public class Binarizer {
 			if (!it.hasNext())
 				return sb.toString();
 			sb.append(',');
+		}
+	}
+	
+	private void debinarize(Node node){
+		for (int i=node.getDaughters().size()-1;i>=0;i--){
+			debinarize(node.getDaughters().get(i));
+		}
+		if (node.getIdentifier().contains("@")){
+			for (Node daughter:node.getDaughters()){
+				node.getParent().addDaughter(daughter);
+				daughter.setParent(node);
+			}
+			node.getParent().removeDaughter(node);
 		}
 	}
 	
@@ -108,6 +133,21 @@ public class Binarizer {
 			if (!result){
 				throw new AssertionError("hMarkov "+test.getKey()+": Tree should have been:\n"+test.getValue()+" but it is\n"+tree);
 			}
+			b.debinarize(tree.getRoot());
+			result=tree.toString().equals(treeStr);
+			if (!result){
+				throw new AssertionError("hMarkov "+test.getKey()+": debinarization should have been:\n"+treeStr+" but it is\n"+tree);
+			}
 		}
+		
+		System.out.println();
+		System.out.println(treeStr);
+		Tree tree = (Tree) tr.read(treeStr);
+		Binarizer b = new Binarizer(-1);
+		b.binarize(tree.getRoot());
+		System.out.println(tree);
+		b.debinarize(tree.getRoot());
+		System.out.println(tree);
+		
 	}
 }

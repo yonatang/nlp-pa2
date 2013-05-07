@@ -39,7 +39,7 @@ public class Treebank {
 	
 	public String toString()
 	{
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		for (int i = 0; i < getAnalyses().size(); i++) 
 		{
 			sb.append((getAnalyses().get(i)).toString());

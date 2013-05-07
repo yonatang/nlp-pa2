@@ -1,34 +1,29 @@
 package grammar;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.StringTokenizer;
 
-
 /**
  * 
  * @author rtsarfat
- *
- * CLASS: Event
  * 
- * Definition: 
- * 		Structured events 
- * Role: 
- * 		Define the form of the 
- *      left-hand-side and right-hand-side of grammar rules 
- * Responsibility: 
- * 		keep track of symbols lists, 
- * 		check event identity
+ *         CLASS: Event
  * 
- * Usage: Each event may define multiple daughters separated by space
- *   
+ *         Definition: Structured events Role: Define the form of the
+ *         left-hand-side and right-hand-side of grammar rules Responsibility:
+ *         keep track of symbols lists, check event identity
+ * 
+ *         Usage: Each event may define multiple daughters separated by space
+ * 
  */
 
 public class Event {
-	
+
 	private List<String> m_lstSymbols = new ArrayList<String>();
-	
+
 	public Event(String s) {
 		StringTokenizer st = new StringTokenizer(s);
 		while (st.hasMoreTokens()) {
@@ -38,46 +33,52 @@ public class Event {
 	}
 
 	private void addSymbol(String sym) {
-		getSymbols().add(sym);
+		m_lstSymbols.add(sym);
 	}
 
-	
-	
-	public String toString()
-	{
-		// return concatenation of symbols
-		StringBuffer sb = new StringBuffer();
-		Iterator<String> it = getSymbols().iterator();
-		while (it.hasNext()) {
-			String s = (String) it.next();
-			sb.append(s);
-			if (it.hasNext()) 
-				sb.append(" ");	
+	private String toStr;
+
+	public String toString() {
+		if (toStr == null) {
+			// return concatenation of symbols
+			StringBuilder sb = new StringBuilder();
+			Iterator<String> it = getSymbols().iterator();
+			while (it.hasNext()) {
+				String s = (String) it.next();
+				sb.append(s);
+				if (it.hasNext())
+					sb.append(" ");
+			}
+			toStr = sb.toString();
 		}
-		return sb.toString();
-	}
-	
-//	public boolean equals(Object o)
-//	{
-//		return toString().equals(((Event)o).toString());
-//	}
-//	public int hashCode()
-//	{
-//		return toString().hashCode();
-//	}
+		return toStr;
 
-	public List<String> getSymbols() 
-	{
-		return m_lstSymbols;
 	}
+
+	// public boolean equals(Object o)
+	// {
+	// return toString().equals(((Event)o).toString());
+	// }
+	// public int hashCode()
+	// {
+	// return toString().hashCode();
+	// }
+
+	public List<String> getSymbols() {
+		return Collections.unmodifiableList(m_lstSymbols);
+	}
+
+	private Integer _hashCode;
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result
-				+ ((m_lstSymbols == null) ? 0 : m_lstSymbols.hashCode());
-		return result;
+		if (_hashCode == null) {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((m_lstSymbols == null) ? 0 : m_lstSymbols.hashCode());
+			_hashCode = result;
+		}
+		return _hashCode;
 	}
 
 	@Override
@@ -97,14 +98,4 @@ public class Event {
 		return true;
 	}
 
-	public void setSymbols(List<String> symbols) 
-	{
-		m_lstSymbols = symbols;
-	}
-
-	
-	
-	
-	
 }
-

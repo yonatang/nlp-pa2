@@ -147,7 +147,7 @@ public class Rule {
 		return m_LHS;
 	}
 
-	public void setLHS(Event m_lhs) {
+	private void setLHS(Event m_lhs) {
 		m_LHS = m_lhs;
 	}
 
@@ -155,13 +155,17 @@ public class Rule {
 		return m_RHS;
 	}
 
-	public void setRHS(Event m_rhs) {
+	private void setRHS(Event m_rhs) {
 		m_RHS = m_rhs;
 	}
 	
+	private String _toString;
 	public String toString()
 	{
-		return getLHS().toString()+"-->"+getRHS().toString(); //+ " ("+m_dMinusLogProb+")";
+		if (_toString==null){
+			_toString=getLHS().toString()+"-->"+getRHS().toString(); 
+		}
+		return _toString;
 	}
 
 

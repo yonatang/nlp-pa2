@@ -64,7 +64,7 @@ public class TreeReader {
     public Object read(String sInput) 
     {
 	String[] chars = sInput.split("");
-	StringBuffer sb = new StringBuffer();
+	StringBuilder sb = new StringBuilder();
 	ArrayList<String> tokens = new ArrayList<String>();
 
 	for(int i = 0; i < chars.length; i++)
@@ -73,7 +73,7 @@ public class TreeReader {
 	    {
 		if(sb.toString().length() > 0)
 		    tokens.add(sb.toString());
-		sb = new StringBuffer();
+		sb = new StringBuilder();
 	    }
 	    else if(chars[i].equals("(") && sb.toString().length() == 0)
 		 {
@@ -87,7 +87,7 @@ public class TreeReader {
 		     {
 			 sb.append(chars[i]);
 			 tokens.add(sb.toString());
-			 sb = new StringBuffer();
+			 sb = new StringBuilder();
 		     }
 	    
 	}

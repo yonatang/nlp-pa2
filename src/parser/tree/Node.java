@@ -159,7 +159,7 @@ public class Node {
 	
 	// toString - dominated subtree
 	public String toStringSubtree() {
-		StringBuffer sb = new StringBuffer();
+		StringBuilder sb = new StringBuilder();
 		
 		if (!this.isLeaf())
 		{
