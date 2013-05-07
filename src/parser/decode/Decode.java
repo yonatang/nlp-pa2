@@ -14,11 +14,8 @@ import java.util.Set;
 import tree.Node;
 import tree.Terminal;
 import tree.Tree;
-import utils.Timer;
 
 public class Decode {
-
-	private static final boolean OUTPUT = false;
 
 	public static Set<Rule> m_setGrammarRules = null;
 	public static Map<String, Set<Rule>> m_mapLexicalRules = null;
@@ -28,16 +25,6 @@ public class Decode {
 	 * memory
 	 */
 	public static Decode m_singDecoder = null;
-
-	public static void print(Object o) {
-		if (OUTPUT)
-			System.out.print(o);
-	}
-
-	public static void println(Object o) {
-		if (OUTPUT)
-			System.out.println(o);
-	}
 
 	public static Decode getInstance(Grammar g) {
 		if (m_singDecoder == null) {
@@ -122,24 +109,10 @@ public class Decode {
 		if (cell == null)
 			return null;
 		return cell.get(symbol);
-		// if (cell.containsKey(symb))
-		// for (TagProb tp : cell) {
-		// List<String> symbols = tp.getTag().getSymbols();
-		// if (symbols.size() == 1 && symbols.get(0).equals(symbol))
-		// return tp;
-		// }
-		// return null;
 	}
 
-	private void addTagProb(TagProbCell cell, TagProb tp) {
-		cell.addTagProb(tp);
-		// TagProb exists = getTagProb(cell, tp.getTag().toString());
-		// if (exists != null) {
-		// if (tp.getMinusLogProb() > exists.getMinusLogProb())
-		// return;
-		// cell.remove(exists);
-		// }
-		// cell.add(tp);
+	private boolean addTagProb(TagProbCell cell, TagProb tp) {
+		return cell.addTagProb(tp);
 	}
 
 	public Tree decode(List<String> input) {
@@ -148,32 +121,17 @@ public class Decode {
 			tree = ckyParse(input);
 
 		if (tree == null) {
+			// if CKY failed, use baseline parser
 			if (input.size() > 40) {
 				System.out.println("Skipping CKY parsing (too large) of input " + input);
 			} else {
 				System.out.println("Skipping CKY parsing (failed) of input " + input);
 			}
-			// if CKY failed, use baseline parser
 			tree = dummyParse(input);
 		}
 
 		return tree;
 
-	}
-
-	private class TagProbCell extends HashMap<String, TagProb> {
-		private static final long serialVersionUID = 7657267520681027890L;
-
-		public void addTagProb(TagProb tp) {
-			String sym = tp.getTag().toString();
-			if (this.containsKey(sym)) {
-				TagProb existing = get(sym);
-				if (existing.getMinusLogProb() < tp.getMinusLogProb()) {
-					return;
-				}
-			}
-			this.put(sym, tp);
-		}
 	}
 
 	private Tree ckyParse(List<String> input) {
@@ -186,7 +144,6 @@ public class Decode {
 				biRules.add(r);
 			} else {
 				uniRules.add(r);
-				println("Unary rule " + r);
 			}
 		}
 		// init
@@ -197,13 +154,11 @@ public class Decode {
 			if (lexRules == null || lexRules.isEmpty()) {
 				lexRules = new HashSet<>();
 				Rule nnRule = new Rule("NN", seg, true);
-				nnRule.setMinusLogProb(0.0);
-				// println("ADDED SMOOTHED RULE "+nnRule);
+				nnRule.setMinusLogProb(0.0); // that breaks the model, but works
 				lexRules.add(nnRule);
 			} else {
 				lexRules = new HashSet<>(lexRules);
 			}
-			println("For " + seg + " the rules are " + lexRules);
 
 			// Add lex rules
 			for (Rule rule : lexRules) {
@@ -213,65 +168,32 @@ public class Decode {
 					chart[i][i] = new TagProbCell();
 				TagProb lexTagProb = new TagProb(rule.getRHS());
 				chart[i][i].addTagProb(lexTagProb);
-				// chart[i][i].add(lexTagProb);
 				TagProb synTagProb = new TagProb(rule.getLHS(), rule.getMinusLogProb(), lexTagProb);
-				// chart[i][i + 1].add(synTagProb);
 				chart[i][i + 1].addTagProb(synTagProb);
 			}
 
 			// Add unary rules
-			// TODO add several iterations
-			for (Rule rule : uniRules) {
-				Event lhs = rule.getLHS();
-				Event rhs = rule.getRHS();
-				List<String> symbols = rhs.getSymbols();
-				TagProb child = getTagProb(chart[i][i + 1], symbols.get(0));
-				if (child != null) {
-					double minusLogProb = child.getMinusLogProb() + rule.getMinusLogProb();
-					TagProb tp = new TagProb(lhs, minusLogProb, child);
-					println("  adding unary rule " + tp);
-					addTagProb(chart[i][i + 1], tp);
+			boolean added;
+			do {
+				added = false;
+				for (Rule rule : uniRules) {
+					Event lhs = rule.getLHS();
+					Event rhs = rule.getRHS();
+					List<String> symbols = rhs.getSymbols();
+					TagProb child = getTagProb(chart[i][i + 1], symbols.get(0));
+					if (child != null) {
+						double minusLogProb = child.getMinusLogProb() + rule.getMinusLogProb();
+						TagProb tp = new TagProb(lhs, minusLogProb, child);
+						added = added || addTagProb(chart[i][i + 1], tp);
+					}
 				}
-			}
-			// TODO unary extension
-
-			// Set<Rule> toAdd;
-			// do {
-			// toAdd = new HashSet<>();
-			// for (Rule rule : m_setGrammarRules) {
-			// List<String> symbols = rule.getRHS().getSymbols();
-			// // println("!!"+rules);
-			// for (Rule lexRule : rules) {
-			// if (symbols.size() == 1
-			// && symbols.get(0).equals(
-			// lexRule.getLHS().getSymbols().get(0))
-			// && !rules.contains(rule)) {
-			// println("need to add " + rule
-			// + " to reach " + lexRule);
-			// toAdd.add(rule);
-			// }
-			// }
-			//
-			// }
-			// if (!toAdd.isEmpty()) {
-			// rules.addAll(toAdd);
-			// println("  adding " + toAdd);
-			// }
-			// } while (!toAdd.isEmpty());
-			// println("For " + seg + " the rules are " + rules);
-			// // for (Rule rule:rules){
-			// // m_mapLexicalRules.
-			// // }
-			// chart[i][i + 1] = rules;
-
+			} while (added);
 		}
+
 		// printChart(chart);
-		println("Done initiating, size " + input.size());
-		Timer t;
 		for (int i = 2; i <= input.size(); i++) { // row
 
 			for (int j = i - 2; j >= 0; j--) { // col
-				Timer innr = new Timer().start();
 				for (int k = j + 1; k <= i - 1; k++) {
 					if (chart[j][i] == null) {
 						chart[j][i] = new TagProbCell();
@@ -286,44 +208,30 @@ public class Decode {
 						TagProb right = getTagProb(chart[k][i], symbols.get(1));
 
 						if (left != null && right != null) {
-							// println("--left sym  " + symbols.get(0));
-							// println("  right sym " + symbols.get(1));
-							// println("  adding probs for " + r + "[" +
-							// r.getMinusLogProb() + "]");
-							// println("  left  " + left);
-							// println("  right " + right);
 							double minusLogProb = left.getMinusLogProb() + right.getMinusLogProb()
 									+ r.getMinusLogProb();
 							TagProb tp = new TagProb(lhs, minusLogProb, left, right);
-							// println("  adding " + tp);
 							addTagProb(chart[j][i], tp);
 						}
 					}
-
-					for (Rule r : uniRules) {
-						Event lhs = r.getLHS();
-						Event rhs = r.getRHS();
-						List<String> symbols = rhs.getSymbols();
-						TagProb child = getTagProb(chart[j][i], symbols.get(0));
-						if (child != null) {
-							// println("--child sym " + symbols.get(0));
-							// println("  adding probs for " + r + "[" +
-							// r.getMinusLogProb() + "]");
-							// println("  child " + child);
-							double minusLogProb = child.getMinusLogProb() + r.getMinusLogProb();
-							TagProb tp = new TagProb(lhs, minusLogProb, child);
-							// println("  adding " + tp);
-							addTagProb(chart[j][i], tp);
+					boolean added;
+					do {
+						added = false;
+						for (Rule r : uniRules) {
+							Event lhs = r.getLHS();
+							Event rhs = r.getRHS();
+							List<String> symbols = rhs.getSymbols();
+							TagProb child = getTagProb(chart[j][i], symbols.get(0));
+							if (child != null) {
+								double minusLogProb = child.getMinusLogProb() + r.getMinusLogProb();
+								TagProb tp = new TagProb(lhs, minusLogProb, child);
+								added = added || addTagProb(chart[j][i], tp);
+							}
 						}
-					}
+					} while (added);
 				}
-				// System.out.println("For "+j+","+i+" "+((i - 1)-(j +
-				// 1))+" it took "+innr.stop());
 			}
 		}
-		printChart(chart);
-		println("");
-		println(chart[0][input.size()]);
 		TagProb start = null;
 		for (TagProb tp : chart[0][input.size()].values()) {
 			if (tp.tag.toString().equals("S")) {
@@ -339,7 +247,7 @@ public class Decode {
 		top.addDaughter(s);
 		buildTree(s, start);
 		Tree tree = new Tree(top);
-		println(tree);
+		// printChart(chart);
 		return tree;
 	}
 
@@ -360,6 +268,7 @@ public class Decode {
 
 	}
 
+	@SuppressWarnings("unused")
 	private void printChart(TagProbCell[][] chart) {
 		int[] width = new int[chart[0].length];
 		for (int i = 0; i < chart.length; i++) {
@@ -373,12 +282,12 @@ public class Decode {
 			for (int j = 0; j < chart[i].length; j++) {
 				String format = "%-" + width[j] + "s";
 				if (chart[i][j] == null)
-					print(String.format(format, ""));
+					System.out.print(String.format(format, ""));
 				else
-					print(String.format(format, chart[i][j].values()));
-				print("|");
+					System.out.print(String.format(format, chart[i][j].values()));
+				System.out.print("|");
 			}
-			println("");
+			System.out.println("");
 		}
 	}
 
@@ -395,8 +304,20 @@ public class Decode {
 		return t;
 	}
 
-	public static void main(String... args) {
-		System.out.println("A" + String.format("%-5s", "b") + "B");
+	private class TagProbCell extends HashMap<String, TagProb> {
+		private static final long serialVersionUID = 7657267520681027890L;
+
+		public boolean addTagProb(TagProb tp) {
+			String sym = tp.getTag().toString();
+			if (this.containsKey(sym)) {
+				TagProb existing = get(sym);
+				if (existing.getMinusLogProb() <= tp.getMinusLogProb()) {
+					return false;
+				}
+			}
+			this.put(sym, tp);
+			return true;
+		}
 	}
 
 }
